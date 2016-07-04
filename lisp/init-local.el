@@ -107,6 +107,10 @@
 (eval-after-load 'company
   '(add-to-list 'company-backends 'company-tern))
 
+(require 'go-autocomplete)
+(require 'auto-complete-config)
+(ac-config-default)
+
 ;; M-}
 ;;(global-set-key (kbd "M-}") 'forward-paragraph)
 ;;(define-key m (kbd "M-}") 'forward-paragraph)
