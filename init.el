@@ -89,7 +89,8 @@
 (require 'init-erlang)
 (require 'init-javascript)
 (require 'init-php)
-(require 'init-org)
+;; 这里面有个 package `mac-grab-link` 安装不了，导致 emacs 启动卡死
+;; (require 'init-org)
 (require 'init-nxml)
 (require 'init-html)
 (require 'init-css)
@@ -160,6 +161,10 @@
             (message "init completed in %.2fms"
                      (sanityinc/time-subtract-millis after-init-time before-init-time))))
 
+;; temp: trying to fix: https://github.com/purcell/emacs.d/issues/266
+;; 也没其他啥好解决办法
+(setq tramp-ssh-controlmaster-options
+      "-o ControlMaster=auto -o ControlPath='tramp.%%C' -o ControlPersist=no")
 
 (provide 'init)
 
