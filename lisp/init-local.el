@@ -123,4 +123,14 @@
             (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
               (ggtags-mode 1))))
 
+(add-hook 'python-mode-hook
+          (lambda ()
+            (when (derived-mode-p 'python-mode)
+              (ggtags-mode 1))))
+
+(add-hook 'go-mode-hook
+          (lambda ()
+            (when (derived-mode-p 'go-mode)
+              (ggtags-mode 1))))
+
 ;;; init-local.el ends here
