@@ -27,7 +27,7 @@
 ;; for helm-find-files
 (customize-set-variable 'helm-ff-lynx-style-map t)
 
-;; for helm-imenu
+;; For helm-imenu
 (customize-set-variable 'helm-imenu-lynx-style-map t)
 
 ;; for semantic
@@ -39,21 +39,24 @@
 ;; for helm-grep
 (customize-set-variable 'helm-grep-use-ioccur-style-keys t)
 
+;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
+;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
+;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
+(global-set-key (kbd "C-c h") 'helm-command-prefix)
+(global-unset-key (kbd "C-x c"))
+
+;; nyan-mode
+(nyan-mode t)
+(nyan-start-animation)
+
 ;; disable auto save
 (setq auto-save-default nil)
 
 ;; show line/column number
-(setq line-number-mode t)
 (setq column-number-mode t)
 
 ;; show parentheses
 (show-paren-mode t)
-
-;; line number
-;; (global-linum-mode 1)
-;; (add-hook 'term-mode-hook
-;;           (lambda ()
-;;             (linum-mode 0)))
 
 ;; ident
 (global-set-key (kbd "RET") 'newline-and-indent) ; automatically indent when press RET
@@ -130,6 +133,7 @@
 (require 'go-autocomplete)
 (require 'auto-complete-config)
 (ac-config-default)
+(setenv "GOPATH" "/Users/iswallowyourring/work/gopath19")
 
 ;; M-}
 ;;(global-set-key (kbd "M-}") 'forward-paragraph)
@@ -153,4 +157,15 @@
             (when (derived-mode-p 'go-mode)
               (ggtags-mode 1))))
 
+;; oxs-key-binding
+(when (eq system-type 'darwin) ;; mac specific settings
+  (setq mac-option-modifier 'meta)
+  (setq mac-command-modifier nil))
+
+;; text movement
+(global-set-key (kbd "M-<right>") 'forward-word)
+(global-set-key (kbd "M-<left>") 'backward-word)
+
+;; font
+(set-frame-font  "-*-Menlo-normal-normal-normal-*-16-*-*-*-m-0-iso10646-1")
 ;;; init-local.el ends here
