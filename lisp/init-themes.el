@@ -1,8 +1,16 @@
+;;; init-themes.el --- Defaults for themes -*- lexical-binding: t -*-
+;;; Commentary:
+;;; Code:
+
 (require-package 'color-theme-sanityinc-solarized)
 (require-package 'color-theme-sanityinc-tomorrow)
 
+;; Don't prompt to confirm theme safety. This avoids problems with
+;; first-time startup on Emacs > 26.3.
+(setq custom-safe-themes t)
+
 ;; If you don't customize it, this is the theme you get.
-(setq-default custom-enabled-themes '(sanityinc-solarized-light))
+(setq-default custom-enabled-themes '(sanityinc-tomorrow-bright))
 
 ;; Ensure that themes will be applied even if they have not been customized
 (defun reapply-themes ()
@@ -21,12 +29,23 @@
 (defun light ()
   "Activate a light color theme."
   (interactive)
-  (color-theme-sanityinc-solarized-light))
+  (setq custom-enabled-themes '(sanityinc-tomorrow-day))
+  (reapply-themes))
 
 (defun dark ()
   "Activate a dark color theme."
   (interactive)
-  (color-theme-sanityinc-solarized-dark))
+  (setq custom-enabled-themes '(sanityinc-tomorrow-bright))
+  (reapply-themes))
+
+
+(when (maybe-require-package 'dimmer)
+  (setq-default dimmer-fraction 0.15)
+  (add-hook 'after-init-hook 'dimmer-mode)
+  ;; TODO: file upstream as a PR
+  (after-load 'dimmer
+    (advice-add 'frame-set-background-mode :after (lambda (&rest args) (dimmer-process-all)))))
 
 
 (provide 'init-themes)
+;;; init-themes.el ends here

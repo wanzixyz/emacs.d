@@ -1,18 +1,18 @@
-(when (maybe-require-package 'projectile)
-  (add-hook 'after-init-hook 'projectile-global-mode)
+;;; init-projectile.el --- Use Projectile for navigation within projects -*- lexical-binding: t -*-
+;;; Commentary:
+;;; Code:
 
-  ;; The following code means you get a menu if you hit "C-c p" and wait
-  (after-load 'guide-key
-    (add-to-list 'guide-key/guide-key-sequence "C-c p"))
+(when (maybe-require-package 'projectile)
+  (add-hook 'after-init-hook 'projectile-mode)
 
   ;; Shorter modeline
+  (setq-default projectile-mode-line-prefix " Proj")
+
   (after-load 'projectile
-    (setq-default
-     projectile-mode-line
-     '(:eval
-       (if (file-remote-p default-directory)
-           " Pr"
-         (format " Pr[%s]" (projectile-project-name)))))))
+    (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map))
+
+  (maybe-require-package 'ibuffer-projectile))
 
 
 (provide 'init-projectile)
+;;; init-projectile.el ends here

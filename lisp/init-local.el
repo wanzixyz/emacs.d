@@ -2,6 +2,9 @@
 ;;; Commentary:
 ;;; Code:
 
+;; undo-tree
+(global-undo-tree-mode)
+
 ;; disable backup
 (setq backup-inhibited t)
 
@@ -18,6 +21,23 @@
 (global-set-key (kbd "C-x C-b") 'helm-buffers-list)
 (global-set-key (kbd "M-x") 'helm-M-x)
 (global-set-key (kbd "C-x C-i") 'helm-imenu)
+(with-eval-after-load 'helm
+  (define-key helm-map (kbd "<left>") 'helm-previous-source)
+  (define-key helm-map (kbd "<right>") 'helm-next-source))
+;; for helm-find-files
+(customize-set-variable 'helm-ff-lynx-style-map t)
+
+;; for helm-imenu
+(customize-set-variable 'helm-imenu-lynx-style-map t)
+
+;; for semantic
+(customize-set-variable 'helm-semantic-lynx-style-map t)
+
+;; for helm-occur
+(customize-set-variable 'helm-occur-use-ioccur-style-keys t)
+
+;; for helm-grep
+(customize-set-variable 'helm-grep-use-ioccur-style-keys t)
 
 ;; disable auto save
 (setq auto-save-default nil)
@@ -30,10 +50,10 @@
 (show-paren-mode t)
 
 ;; line number
-(global-linum-mode 1)
-(add-hook 'term-mode-hook
-          (lambda ()
-            (linum-mode 0)))
+;; (global-linum-mode 1)
+;; (add-hook 'term-mode-hook
+;;           (lambda ()
+;;             (linum-mode 0)))
 
 ;; ident
 (global-set-key (kbd "RET") 'newline-and-indent) ; automatically indent when press RET
@@ -54,9 +74,9 @@
 (global-visual-line-mode 1)
 
 ;; blank mode
-(require 'blank-mode)
-(setq blank-chars '(tabs trailing space-before-tab newline empty space-after-tab))
-(setq blank-style '(color))
+;;(require 'blank-mode)
+;;(setq blank-chars '(tabs trailing space-before-tab newline empty space-after-tab))
+;;(setq blank-style '(color))
 
 ;; Package: projejctile
 (require 'projectile)

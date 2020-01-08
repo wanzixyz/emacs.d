@@ -1,109 +1,73 @@
-;; TODO: https://wunki.org/posts/2014-05-17-haskell-packages-development.html
-;; https://github.com/chrisdone/chrisdone-emacs/blob/master/config/haskell.el
-;; TODO: ghci-ng
-;; TODO: don't pop up *Warnings* if haskell-stylish-on-save fails
-;; TODO: purescript-mode
-(require-package 'haskell-mode)
+;;; init-haskell.el --- Support the Haskell language -*- lexical-binding: t -*-
+;;; Commentary:
+;;; Code:
 
-
-;; Completion
+(when (maybe-require-package 'haskell-mode)
+  (add-hook 'haskell-mode-hook 'subword-mode)
+  (add-hook 'haskell-cabal-mode 'subword-mode)
 
-(when (executable-find "ghci-ng")
-  (setq-default haskell-process-args-cabal-repl
-                '("--ghc-option=-ferror-spans" "--with-ghc=ghci-ng")))
+  (when (maybe-require-package 'dante)
+    (add-hook 'haskell-mode-hook 'dante-mode)
+    (after-load 'dante
+      (flycheck-add-next-checker 'haskell-dante
+                                 '(warning . haskell-hlint))))
 
-(when (maybe-require-package 'company-ghci)
+  (add-hook 'haskell-mode-hook 'interactive-haskell-mode)
+
+  (add-auto-mode 'haskell-mode "\\.ghci\\'")
+
+  ;; Indentation
+  (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+
+
+  ;; Source code helpers
+
+  (add-hook 'haskell-mode-hook 'haskell-auto-insert-module-template)
+
+  (when (maybe-require-package 'reformatter)
+    (reformatter-define hindent
+      :program "hindent"
+      :lighter " Hin")
+
+    (defalias 'hindent-mode 'hindent-on-save-mode))
+
   (after-load 'haskell-mode
-    (after-load 'company
-      (add-hook 'haskell-mode-hook
-                (lambda () (sanityinc/local-push-company-backend 'company-ghci))))))
+    (define-key haskell-mode-map (kbd "C-c h") 'hoogle)
+    (define-key haskell-mode-map (kbd "C-o") 'open-line))
+
+
+  (after-load 'page-break-lines
+    (push 'haskell-mode page-break-lines-modes)))
 
 
 
-;; Flycheck specifics
+(define-minor-mode stack-exec-path-mode
+  "If this is a stack project, set `exec-path' to the path \"stack exec\" would use."
+  nil
+  :lighter ""
+  :global nil
+  (if stack-exec-path-mode
+      (when (and (executable-find "stack")
+                 (locate-dominating-file default-directory "stack.yaml"))
+        (let ((stack-path (replace-regexp-in-string
+                           "[\r\n]+\\'" ""
+                           (shell-command-to-string (concat "stack exec -- sh -c "
+                                                            (shell-quote-argument "echo $PATH"))))))
+          (setq-local exec-path (seq-uniq (parse-colon-path stack-path) 'string-equal))
+          (make-local-variable 'process-environment)
+          (setenv "PATH" (string-join exec-path path-separator))))
+    (kill-local-variable 'exec-path)
+    (kill-local-variable 'process-environment)))
 
-(when (and (maybe-require-package 'flycheck-haskell)
-           (require-package 'flycheck-hdevtools))
-  (after-load 'flycheck
-    (add-hook 'haskell-mode-hook #'flycheck-haskell-setup)
-
-    (defun sanityinc/flycheck-haskell-reconfigure ()
-      "Reconfigure flycheck haskell settings, e.g. after changing cabal file."
-      (interactive)
-      (unless (eq major-mode 'haskell-mode)
-        (error "Expected to be in haskell-mode"))
-      (flycheck-haskell-clear-config-cache)
-      (flycheck-haskell-configure)
-      (flycheck-mode -1)
-      (flycheck-mode))
-
-    (after-load 'haskell-mode
-      (require 'flycheck-hdevtools))))
-
-(when (maybe-require-package 'intero)
-  (after-load 'haskell-mode
-    (add-hook 'haskell-mode-hook 'intero-mode)))
+(add-hook 'haskell-mode-hook 'stack-exec-path-mode)
 
 
 
-;; Docs
-
-(dolist (hook '(haskell-mode-hook inferior-haskell-mode-hook haskell-interactive-mode-hook))
-  (add-hook hook (lambda () (subword-mode +1)))
-  (add-hook hook (lambda () (eldoc-mode 1))))
-(add-hook 'haskell-mode-hook 'interactive-haskell-mode)
-
-(add-hook 'haskell-interactive-mode-hook 'sanityinc/no-trailing-whitespace)
-
-
-;; Interaction
-
-(after-load 'haskell
-  (diminish 'interactive-haskell-mode " IntHS"))
-
-(add-auto-mode 'haskell-mode "\\.ghci\\'")
-
-(when (maybe-require-package 'ghci-completion)
-  (add-hook 'inferior-haskell-mode-hook 'turn-on-ghci-completion))
+(when (maybe-require-package 'dhall-mode)
+  (add-hook 'dhall-mode-hook 'stack-exec-path-mode))
 
 
-
-;; Indentation
-(add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
-
-
-
-;; Source code helpers
-
-(add-hook 'haskell-mode-hook 'haskell-auto-insert-module-template)
-
-(setq-default haskell-stylish-on-save t)
-
-(maybe-require-package 'hayoo)
-(after-load 'haskell-mode
-  (define-key haskell-mode-map (kbd "C-c h") 'hoogle)
-  (define-key haskell-mode-map (kbd "C-o") 'open-line))
-
-
-(after-load 'page-break-lines
-  (push 'haskell-mode page-break-lines-modes))
-
-;; Make compilation-mode understand "at blah.hs:11:34-50" lines output by GHC
-(after-load 'compile
-  (let ((alias 'ghc-at-regexp))
-    (add-to-list
-     'compilation-error-regexp-alist-alist
-     (list alias " at \\(.*\\.\\(?:l?[gh]hs\\|hi\\)\\):\\([0-9]+\\):\\([0-9]+\\)-[0-9]+$" 1 2 3 0 1))
-    (add-to-list
-     'compilation-error-regexp-alist alias)))
-
-
-;; Stop haskell-mode's compiler note navigation from clobbering highlight-symbol-nav-mode
-(after-load 'haskell
-  (define-key interactive-haskell-mode-map (kbd "M-n") nil)
-  (define-key interactive-haskell-mode-map (kbd "M-p") nil)
-  (define-key interactive-haskell-mode-map (kbd "M-N") 'haskell-goto-next-error)
-  (define-key interactive-haskell-mode-map (kbd "M-P") 'haskell-goto-prev-error))
 
 
 (provide 'init-haskell)
+;;; init-haskell.el ends here

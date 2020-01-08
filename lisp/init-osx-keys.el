@@ -1,7 +1,10 @@
+;;; init-osx-keys.el --- Configure keys specific to MacOS -*- lexical-binding: t -*-
+;;; Commentary:
+;;; Code:
+
 (when *is-a-mac*
   (setq mac-command-modifier 'meta)
   (setq mac-option-modifier 'none)
-  (setq-default default-input-method "MacOSX")
   ;; Make mouse wheel / trackpad scrolling less jerky
   (setq mouse-wheel-scroll-amount '(1
                                     ((shift) . 5)
@@ -19,3 +22,4 @@
 
 
 (provide 'init-osx-keys)
+;;; init-osx-keys.el ends here

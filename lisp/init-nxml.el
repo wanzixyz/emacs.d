@@ -1,3 +1,7 @@
+;;; init-nxml.el --- Support for editing XML with NXML -*- lexical-binding: t -*-
+;;; Commentary:
+;;; Code:
+
 (add-auto-mode
  'nxml-mode
  (concat "\\."
@@ -7,8 +11,6 @@
          "\\'"))
 (setq magic-mode-alist (cons '("<\\?xml " . nxml-mode) magic-mode-alist))
 (fset 'xml-mode 'nxml-mode)
-(add-hook 'nxml-mode-hook (lambda ()
-                            (set (make-local-variable 'ido-use-filename-at-point) nil)))
 (setq nxml-slash-auto-complete-flag t)
 
 
@@ -23,20 +25,18 @@ indentation rules."
     (setq beg (point-min)
           end (point-max)))
   ;; Use markers because our changes will move END
-  (setq beg (set-marker (make-marker) begin)
+  (setq beg (set-marker (make-marker) beg)
         end (set-marker (make-marker) end))
   (save-excursion
     (goto-char beg)
     (while (search-forward-regexp "\>[ \\t]*\<" end t)
       (backward-char) (insert "\n"))
     (nxml-mode)
-    (indent-region begin end)))
+    (indent-region beg end)))
 
 ;;----------------------------------------------------------------------------
 ;; Integration with tidy for html + xml
 ;;----------------------------------------------------------------------------
-(require-package 'tidy)
-(add-hook 'nxml-mode-hook (lambda () (tidy-build-menu nxml-mode-map)))
 
 (defun sanityinc/tidy-buffer-xml (beg end)
   "Run \"tidy -xml\" on the region from BEG to END, or whole buffer."
@@ -48,3 +48,4 @@ indentation rules."
 
 
 (provide 'init-nxml)
+;;; init-nxml.el ends here
