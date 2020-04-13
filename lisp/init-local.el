@@ -174,7 +174,10 @@
 
 (require 'tern)
 (add-hook 'js2-mode-hook (lambda () (tern-mode t)))
-
+(defun my-js-mode-hook ()
+  "My js mode hook."
+  (setq js-indent-level 4))
+(add-hook 'js2-mode-hook 'my-js-mode-hook)
 
 (add-hook 'after-init-hook 'global-company-mode)
 (require 'company-tern)
